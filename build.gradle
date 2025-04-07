@@ -1,0 +1,31 @@
+plugins {
+    id 'java'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'  // Add this line
+}
+
+group = 'org.example'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'net.portswigger.burp.extensions:montoya-api:+'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.14.2'
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.14.2'
+    implementation 'com.fasterxml.jackson.core:jackson-annotations:2.14.2'
+    testImplementation platform('org.junit:junit-bom:5.9.1')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+// Removed the exclusion of Burp's API from the fat JAR
+shadowJar {
+    // No exclusion configuration here
+    // Optionally, you can rename the output jar
+    archiveClassifier.set('')
+}
