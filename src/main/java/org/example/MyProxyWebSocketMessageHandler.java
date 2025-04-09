@@ -70,31 +70,23 @@ public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler { // 
                                 logging.logToOutput("------ "+length);
                                 StringBuilder sb =new StringBuilder();
                                 Boolean sent=false;
-                                String GetoptionString = correctOptionsNode.get(0).path("optionString").asText();
-                                JsonNode parsedOptionString = objectMapper.readTree(GetoptionString);
-                                if(length==1 && parsedOptionString.size() == 4){
-                                    logging.logToOutput("FOUND MCQ");
-                                    logging.logToOutput(parsedOptionString.toString());
-                                }
-                                else{
-                                    for (int i = 0; i < length; i++) {
-                                        JsonNode JsonNodeCorrectOption = correctOptionsNode.get(i).path("optionString");
-                                        //new line
-                                        JsonNode JsonNodeCorrectImage = correctOptionsNode.get(i).path("optionSupportingMedia");
-                                        if (!JsonNodeCorrectImage.isMissingNode() && JsonNodeCorrectImage.size() > 0) {
-                                            JsonNode JsonNodeTrueImage = JsonNodeCorrectImage.path("thumbnailCfUrl");
-                                            if (!JsonNodeTrueImage.isMissingNode()) {
-                                                sendToTelegram(JsonNodeTrueImage.toString());
-                                                sb.append(JsonNodeTrueImage.toString());
-                                                sb.append(" ");
-                                                sent = true;
-                                            }
-                                        } else {
-                                            sb.append(JsonNodeCorrectOption.toString());
+                                for (int i = 0; i < length; i++) {
+                                    JsonNode JsonNodeCorrectOption = correctOptionsNode.get(i).path("optionString");
+                                    //new line
+                                    JsonNode JsonNodeCorrectImage = correctOptionsNode.get(i).path("optionSupportingMedia");
+                                    if (!JsonNodeCorrectImage.isMissingNode() && JsonNodeCorrectImage.size() > 0) {
+                                        JsonNode JsonNodeTrueImage = JsonNodeCorrectImage.path("thumbnailCfUrl");
+                                        if (!JsonNodeTrueImage.isMissingNode()) {
+                                            sendToTelegram(JsonNodeTrueImage.toString());
+                                            sb.append(JsonNodeTrueImage.toString());
+                                            sb.append(" ");
+                                            sent = true;
                                         }
-                                        if (i != length - 1)
-                                            sb.append("::");
+                                    } else {
+                                        sb.append(JsonNodeCorrectOption.toString());
                                     }
+                                    if (i != length - 1)
+                                        sb.append("::");
                                 }
                                 logging.logToOutput(sb.toString());
                                 if(!sent)
