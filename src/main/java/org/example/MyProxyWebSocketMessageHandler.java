@@ -6,6 +6,9 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.TreeMap;
+
 import burp.api.montoya.websocket.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,8 +25,8 @@ public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler { // 
     MontoyaApi api;
     Logging logging;
 
-    private final String botToken = "7853228648:AAFEYyTJ0WrjHYyuTkIy8O4lJNEpxW24Z6Q"; // Replace with your bot token
-    private final String chatId = "-1002321540121";//group
+    private final String botToken = "token"; // Replace with your bot token
+    private final String chatId = "-chat";//group
 
     public MyProxyWebSocketMessageHandler(MontoyaApi api) {
         // Save a reference to the MontoyaApi object
@@ -58,11 +61,20 @@ public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler { // 
                     //logging.logToOutput("mcqResponse Node: " + mcqResponseNode.toString());
                     if (!mcqResponseNode.isMissingNode()) {
                         // Check if "userResponses" exists
-                        JsonNode userResponsesNode = mcqResponseNode.path("userResponses");
+                        // In here we are using userResponses
+                        // JsonNode userResponsesNode = mcqResponseNode.path("userResponses");
+                        // We can use questionIdToResponseInfoObject to map correct option to its correct correctId
+                        JsonNode questionIdToResponseInfoObjectNode = mcqResponseNode.path("questionIdToResponseInfoObject");
+
+
                         //logging.logToOutput("userResponses Node: " + userResponsesNode.toString());
-                        if (!userResponsesNode.isMissingNode() && userResponsesNode.isArray() && userResponsesNode.size() > 0) {
-                            int reslength=userResponsesNode.size();
-                            JsonNode correctOptionsNode = userResponsesNode.get(reslength-1).path("correctOptions");
+                        if (!questionIdToResponseInfoObjectNode.isMissingNode() && questionIdToResponseInfoObjectNode.isArray() && questionIdToResponseInfoObjectNode.size() > 0) {
+                            int reslength=questionIdToResponseInfoObjectNode.size();
+                            
+                            TreeMap<String, String> optionIdToOptionString = new TreeMap(); 
+
+                            JsonNode correctOptionsNode = questionIdToResponseInfoObjectNode.get(reslength-1).path("correctOptions");
+                            JsonNode userSelectedOptionsNode = questionIdToResponseInfoObjectNode.get(reslength - 1).path("userSelectedOptions");
                             //logging.logToOutput("CorrectOptions Node: " + correctOptionsNode.toString());
                             if (!correctOptionsNode.isMissingNode() && correctOptionsNode.isArray() && correctOptionsNode.size() > 0) {
                                 // Successfully found the correctOptions, now log the data
@@ -88,7 +100,30 @@ public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler { // 
                                     if (i != length - 1)
                                         sb.append("::");
                                 }
+
+                                // Mapping answer by the OptionId in ascending order
+                                // For match or arrange questions
+
+                                int lengthUserSelectedOption = userSelectedOptionsNode.size();
+
+                                for(int i = 0 ; i < lengthUserSelectedOption; i ++){
+                                    JsonNode optionStringVar = correctOptionsNode.get(i).path("optionString");
+                                    JsonNode optionIdVar = correctOptionsNode.get(i).path("optionId"); 
+                                    optionIdToOptionString.put(optionIdVar.toString(), optionStringVar.toString());
+                                }
+
+                                StringBuilder stb = new StringBuilder();
+
+                                for(String s: optionIdToOptionString.keySet()){
+                                    stb.append(optionIdToOptionString.get(s));
+                                    stb.append("::");
+                                }
+                                
+                                logging.logToOutput(stb.toString());
+
+
                                 logging.logToOutput(sb.toString());
+                                
                                 if(!sent)
                                 sendToTelegram(sb.toString());
                             } else {
