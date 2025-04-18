@@ -18,7 +18,7 @@ import burp.api.montoya.core.HighlightColor;
 import burp.api.montoya.proxy.websocket.*;
 
 import static burp.api.montoya.websocket.Direction.CLIENT_TO_SERVER;
-
+//final
 public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler { // Change to implement ProxyMessageHandler
 
     MontoyaApi api;
