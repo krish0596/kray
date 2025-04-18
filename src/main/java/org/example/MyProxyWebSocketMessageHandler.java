@@ -85,6 +85,8 @@ public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler { // 
                                     if(questionLowerCase.contains("match" ) || questionLowerCase.contains("arrange" )){
                                         int lengthUserSelectedOption = userSelectedOptionsNode.size();
 
+                                        logging.logToOutput("match or arrange task");
+
                                         for(int j = 0; j < lengthUserSelectedOption; j ++){
                                             JsonNode optionStringNode = userSelectedOptionsNode.get(j).path("optionString");
                                             JsonNode optionIdNode = userSelectedOptionsNode.get(j).path("optionId");
