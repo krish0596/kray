@@ -79,7 +79,7 @@ public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler { // 
                                 JsonNode questionString = userResponsesNode.get(reslength - 1).path("questionString");
                                 String questionLowerCase = questionString.toString().toLowerCase();
 
-                                Boolean isAMatchQuestion = false;
+                                Boolean isAMatchQuestion = false; 
 
                                 if(questionLowerCase.contains("match" ) || questionLowerCase.contains("arrange" )){
                                     int lengthUserSelectedOption = userSelectedOptionsNode.size();
