@@ -49,4 +49,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: shadow-jar
-          path: build/libs/*-all.jar  # Adjust to match your Shadow JAR output
+          path: build/libs/*.jar  # Adjust to match your Shadow JAR output
