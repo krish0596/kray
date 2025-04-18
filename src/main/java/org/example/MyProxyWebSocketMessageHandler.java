@@ -110,7 +110,7 @@ public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler { // 
 
                                     }
 
-                                   
+                                    JsonNode JsonNodeCorrectOption = correctOptionsNode.get(i).path("optionString");
 
                                     //new line
                                     JsonNode JsonNodeCorrectImage = correctOptionsNode.get(i).path("optionSupportingMedia");
