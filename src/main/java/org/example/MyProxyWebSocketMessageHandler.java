@@ -74,55 +74,47 @@ public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler { // 
                                 StringBuilder sb =new StringBuilder();
                                 Boolean sent=false;
 
-                                JsonNode questionString = userResponsesNode.get(reslength - 1).path("questionString");
-
                                 TreeMap<String, String> optionIdtoAnswer = new TreeMap<>();
-                                loop: for (int i = 0; i < length; i++) {                                    
-                                    
-                                    String questionLowerCase = questionString.toString().toLowerCase();
 
-                                    // logging.logToOutput("Nik PR"); 
-                                    // logging.logToOutput(questionLowerCase);
+                                JsonNode questionString = userResponsesNode.get(reslength - 1).path("questionString");
+                                String questionLowerCase = questionString.toString().toLowerCase();
 
-                                    if(questionLowerCase.contains("match" ) || questionLowerCase.contains("arrange" )){
-                                        int lengthUserSelectedOption = userSelectedOptionsNode.size();
+                                Boolean isAMatchQuestion = false;
 
-                                        logging.logToOutput("match or arrange task");
+                                if(questionLowerCase.contains("match" ) || questionLowerCase.contains("arrange" )){
+                                    int lengthUserSelectedOption = userSelectedOptionsNode.size();
 
-                                        for(int j = 0; j < lengthUserSelectedOption; j ++){
-                                            JsonNode optionStringNode = userSelectedOptionsNode.get(j).path("optionString");
-                                            JsonNode optionIdNode = userSelectedOptionsNode.get(j).path("optionId");
+                                    logging.logToOutput("match or arrange task");
 
-                                            optionIdtoAnswer.put(optionIdNode.toString(), optionStringNode.toString());
-                                        }
+                                    for(int j = 0; j < lengthUserSelectedOption; j ++){
+                                        JsonNode optionStringNode = userSelectedOptionsNode.get(j).path("optionString");
+                                        JsonNode optionIdNode = userSelectedOptionsNode.get(j).path("optionId");
 
-                                        StringBuilder stb = new StringBuilder();
-
-                                        for(String s: optionIdtoAnswer.keySet()){
-                                            stb.append(optionIdtoAnswer.get(s));
-                                            stb.append(">>>");
-                                        }
-
-                                        if(stb.length() > 0){
-                                            logging.logToOutput(stb.toString());
-                                        }
-                                        
-                                        optionIdtoAnswer.clear();
-
-                                        continue loop;
-
+                                        optionIdtoAnswer.put(optionIdNode.toString(), optionStringNode.toString());
                                     }
 
+                                    StringBuilder stb = new StringBuilder();
+
+                                    for(String s: optionIdtoAnswer.keySet()){
+                                        stb.append(optionIdtoAnswer.get(s));
+                                        stb.append(">>>");
+                                    }
+
+                                    if(stb.length() > 0){
+                                        logging.logToOutput(stb.toString());
+                                    }
+                                    
+                                    optionIdtoAnswer.clear();
+
+                                   isAMatchQuestion = true;
+
+                                }
+                                
+                                if(!isAMatchQuestion){
+
+                                for (int i = 0; i < length; i++) {                                    
+                                  
                                     JsonNode JsonNodeCorrectOption = correctOptionsNode.get(i).path("optionString");
-
-                                    // int commaCount = 0;
-
-                                    // String correctOptionString = JsonNodeCorrectOption.toString()
-
-                                    // for(int j = 0; j < JsonNodeCorrectOption.toString().length(); j ++){
-                                    //     char c = 
-                                    // }
-
                                     //new line
                                     JsonNode JsonNodeCorrectImage = correctOptionsNode.get(i).path("optionSupportingMedia");
                                     if (!JsonNodeCorrectImage.isMissingNode() && JsonNodeCorrectImage.size() > 0) {
@@ -139,6 +131,7 @@ public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler { // 
                                     if (i != length - 1)
                                         sb.append("::");
                                 }
+                            }
                                 logging.logToOutput(sb.toString());
                                 if(!sent)
                                 sendToTelegram(sb.toString());
