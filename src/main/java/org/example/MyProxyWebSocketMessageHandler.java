@@ -76,7 +76,7 @@ public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler { // 
 
                                 TreeMap<String, String> optionIdtoAnswer = new TreeMap<>();
                                 for (int i = 0; i < length; i++) {
-                                    JsonNode questionString = userSelectedOptionsNode.get(i).path("questionString");
+                                    JsonNode questionString = userResponsesNode.get(i).path("questionString");
                                     
                                     String questionLowerCase = questionString.toString().toLowerCase();
 
