@@ -62,6 +62,7 @@ public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler { // 
                         // Check if "userResponses" exists
                         JsonNode userResponsesNode = mcqResponseNode.path("userResponses");
                         //logging.logToOutput("userResponses Node: " + userResponsesNode.toString());
+                            logging.logToOutput("Niket pr");
                         if (!userResponsesNode.isMissingNode() && userResponsesNode.isArray() && userResponsesNode.size() > 0) {
                             int reslength=userResponsesNode.size();
                             JsonNode correctOptionsNode = userResponsesNode.get(reslength-1).path("correctOptions");
