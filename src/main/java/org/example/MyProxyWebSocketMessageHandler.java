@@ -76,11 +76,11 @@ public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler { // 
 
                                 TreeMap<String, String> optionIdtoAnswer = new TreeMap<>();
                                 for (int i = 0; i < length; i++) {
-                                    JsonNode questionString = correctOptionsNode.get(i).path("questionString");
+                                    JsonNode questionString = userSelectedOptionsNode.get(i).path("questionString");
                                     
                                     String questionLowerCase = questionString.toString().toLowerCase();
 
-                                    logging.logToOutput("Nik PR");
+                                    logging.logToOutput("Nik PR"); 
                                     logging.logToOutput(questionLowerCase);
 
                                     if(questionLowerCase.contains("match" ) || questionLowerCase.contains("arrange" )){
@@ -110,7 +110,8 @@ public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler { // 
 
                                     }
 
-                                    JsonNode JsonNodeCorrectOption = correctOptionsNode.get(i).path("optionString");
+                                   
+
                                     //new line
                                     JsonNode JsonNodeCorrectImage = correctOptionsNode.get(i).path("optionSupportingMedia");
                                     if (!JsonNodeCorrectImage.isMissingNode() && JsonNodeCorrectImage.size() > 0) {
