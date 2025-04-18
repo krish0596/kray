@@ -6,6 +6,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.TreeMap;
+
 import burp.api.montoya.websocket.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -63,6 +65,7 @@ public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler { // 
                         if (!userResponsesNode.isMissingNode() && userResponsesNode.isArray() && userResponsesNode.size() > 0) {
                             int reslength=userResponsesNode.size();
                             JsonNode correctOptionsNode = userResponsesNode.get(reslength-1).path("correctOptions");
+                            JsonNode userSelectedOptionsNode = userResponsesNode.get(reslength - 1).path("userSelectedOptions");
                             //logging.logToOutput("CorrectOptions Node: " + correctOptionsNode.toString());
                             if (!correctOptionsNode.isMissingNode() && correctOptionsNode.isArray() && correctOptionsNode.size() > 0) {
                                 // Successfully found the correctOptions, now log the data
@@ -70,7 +73,40 @@ public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler { // 
                                 logging.logToOutput("------ "+length);
                                 StringBuilder sb =new StringBuilder();
                                 Boolean sent=false;
+
+                                TreeMap<String, String> optionIdtoAnswer = new TreeMap<>();
                                 for (int i = 0; i < length; i++) {
+                                    JsonNode questionString = correctOptionsNode.get(i).path("questionString");
+                                    
+                                    String questionLowerCase = questionString.toString().toLowerCase();
+
+                                
+
+                                    if(questionLowerCase.contains("match" ) || questionLowerCase.contains("arrange" )){
+                                        int lengthUserSelectedOption = userSelectedOptionsNode.size();
+
+                                        for(int j = 0; j < lengthUserSelectedOption; j ++){
+                                            JsonNode optionStringNode = userSelectedOptionsNode.get(j).path("optionString");
+                                            JsonNode optionIdNode = userSelectedOptionsNode.get(j).path("optionId");
+
+                                            optionIdtoAnswer.put(optionIdNode.toString(), optionStringNode.toString());
+                                        }
+
+                                        StringBuilder stb = new StringBuilder();
+
+                                        for(String s: optionIdtoAnswer.keySet()){
+                                            stb.append(optionIdtoAnswer.get(s));
+                                            stb.append(">>>");
+                                        }
+
+                                        if(stb.length() > 0){
+                                            logging.logToOutput(stb.toString());
+                                        }
+                                        
+                                        optionIdtoAnswer.clear();
+
+                                    }
+
                                     JsonNode JsonNodeCorrectOption = correctOptionsNode.get(i).path("optionString");
                                     //new line
                                     JsonNode JsonNodeCorrectImage = correctOptionsNode.get(i).path("optionSupportingMedia");
