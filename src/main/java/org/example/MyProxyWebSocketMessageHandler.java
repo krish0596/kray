@@ -77,12 +77,12 @@ public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler { // 
                                 JsonNode questionString = userResponsesNode.get(reslength - 1).path("questionString");
 
                                 TreeMap<String, String> optionIdtoAnswer = new TreeMap<>();
-                                for (int i = 0; i < length; i++) {                                    
+                                loop: for (int i = 0; i < length; i++) {                                    
                                     
                                     String questionLowerCase = questionString.toString().toLowerCase();
 
-                                    logging.logToOutput("Nik PR"); 
-                                    logging.logToOutput(questionLowerCase);
+                                    // logging.logToOutput("Nik PR"); 
+                                    // logging.logToOutput(questionLowerCase);
 
                                     if(questionLowerCase.contains("match" ) || questionLowerCase.contains("arrange" )){
                                         int lengthUserSelectedOption = userSelectedOptionsNode.size();
@@ -108,6 +108,8 @@ public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler { // 
                                         }
                                         
                                         optionIdtoAnswer.clear();
+
+                                        continue loop;
 
                                     }
 
