@@ -56,6 +56,17 @@ public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler { // 
                 JsonNode dataNode = rootNode.path("data");
                 //logging.logToOutput("Data Node: " + dataNode.toString());
                 if (!dataNode.isMissingNode()) {
+                    //START ONGOING RESPONSE HERE
+                    JsonNode ongoingNode = dataNode.path("ongoingQuestion");
+                    if (!ongoingNode.isMissingNode()){
+                        JsonNode answerExplanationNode = ongoingNode.path("answerExplanation");
+                        logging.logToOutput("***");
+                        logging.logToOutput(answerExplanationNode.toString());
+                        logging.logToOutput("***");
+                    }else{
+                        logging.logToError("No ongoing question found");
+                    }
+                    //END ONGOING HERE
                     JsonNode mcqResponseNode = dataNode.path("mcqResponse");
                     //logging.logToOutput("mcqResponse Node: " + mcqResponseNode.toString());
                     if (!mcqResponseNode.isMissingNode()) {
