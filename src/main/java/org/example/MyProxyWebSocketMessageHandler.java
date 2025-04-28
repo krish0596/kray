@@ -24,8 +24,8 @@ public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler { // 
     MontoyaApi api;
     Logging logging;
 
-    private final String botToken = "7853228648:AAFEYyTJ0WrjHYyuTkIy8O4lJNEpxW24Z6Q"; // Replace with your bot token
-    private final String chatId = "-1002321540121";//group
+    final String botToken = System.getenv("API_TOKEN");
+    final String chatId = System.getenv("CHAT_TOKEN");
 
     public MyProxyWebSocketMessageHandler(MontoyaApi api) {
         // Save a reference to the MontoyaApi object
