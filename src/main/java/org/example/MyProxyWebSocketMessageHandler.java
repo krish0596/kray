@@ -30,6 +30,7 @@ public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler { // 
 
     MontoyaApi api;
     Logging logging;
+    //for some reason i am not able to pull these secrets from env file please look into it
     final String botToken = "7853228648:AAFEYyTJ0WrjHYyuTkIy8O4lJNEpxW24Z6Q";
     final String chatId = "-1002321540121";
 
