@@ -26,8 +26,8 @@ public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler { // 
     Logging logging;
 
     Dotenv dotenv = Dotenv.load();
-    final String botToken = dotenv.get("API_TOKEN");
-    final String chatId = dotenv.get("CHAT_TOKEN");
+    final String botToken = System.getenv("API_TOKEN");
+    final String chatId = System.getenv("CHAT_TOKEN");
 
     public MyProxyWebSocketMessageHandler(MontoyaApi api) {
         // Save a reference to the MontoyaApi object
