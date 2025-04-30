@@ -7,6 +7,7 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.TreeMap;
+import io.github.cdimascio.dotenv.Dotenv;
 
 import burp.api.montoya.websocket.*;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -24,8 +25,9 @@ public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler { // 
     MontoyaApi api;
     Logging logging;
 
-    final String botToken = System.getenv("API_TOKEN");
-    final String chatId = System.getenv("CHAT_TOKEN");
+    Dotenv dotenv = Dotenv.load();
+    final String botToken = dotenv.get("API_TOKEN");
+    final String chatId = dotenv.get("CHAT_TOKEN");
 
     public MyProxyWebSocketMessageHandler(MontoyaApi api) {
         // Save a reference to the MontoyaApi object
