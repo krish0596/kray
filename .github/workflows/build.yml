@@ -11,7 +11,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    env:
+      CHAT_TOKEN: ${{ secrets.CHAT_TOKEN }}
+      API_TOKEN: ${{ secrets.API_TOKEN }}
     steps:
       # Check out the code (handles both push and PR events)
       - name: Checkout code
