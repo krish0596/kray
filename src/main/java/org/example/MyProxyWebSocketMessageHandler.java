@@ -1,12 +1,18 @@
 package org.example;
-
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.net.http.HttpRequest.BodyPublishers;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Map;
 import java.util.TreeMap;
+import java.util.HashMap;
 import io.github.cdimascio.dotenv.Dotenv;
 
 import burp.api.montoya.websocket.*;
@@ -52,6 +58,9 @@ public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler { // 
 
                 // Log the rootNode to check its structure
                 //logging.logToOutput("Root Node: " + rootNode.toString());
+                //***************************
+                //TODO fix the messy code and refactor into diff functions and NIKET PLEASE GIVE A LOOK for refactor
+                //***************************
 
                 // Check if the "data" node exists and log it
                 JsonNode dataNode = rootNode.path("data");
@@ -60,7 +69,60 @@ public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler { // 
                     //START ONGOING RESPONSE HERE
                     JsonNode ongoingNode = dataNode.path("ongoingQuestion");
                     if (!ongoingNode.isMissingNode()){
+                        HashMap<String,String> optionsMap = new HashMap<>();
                         JsonNode answerExplanationNode = ongoingNode.path("answerExplanation");
+                        JsonNode questionStringNode = ongoingNode.path("questionString");
+                        JsonNode optionsNode = ongoingNode.path("options");
+                        //len of option node is 4
+                        for(int k=0;k<optionsNode.size();k++){
+                            JsonNode optionNode = optionsNode.get(k).path("optionString");
+                            JsonNode optionIdNode = optionsNode.get(k).path("optionId");
+                            optionsMap.put(optionIdNode.asText(),optionNode.asText());
+                            logging.logToOutput(optionIdNode.asText()+" - "+optionsMap.get(optionIdNode.asText()));
+                        }
+                        JsonNode fiftyNode = ongoingNode.path("fiftyFiftyRemoveOptionIds");
+                        for(int k=0;k<fiftyNode.size();k++){
+                            optionsMap.remove(fiftyNode.get(k).asText());
+                        }
+                        //hashmap should only contain 2 values 1 correct and 1 wrong
+                        //print hashmap
+                        for(Map.Entry<String,String> entry: optionsMap.entrySet()){
+                            logging.logToOutput(entry.getKey()+" - "+entry.getValue());
+                        }
+                        //we have question string, we have hashmap with 2 option rn and we have answer explanation
+                        //make API
+                        String questionString = questionStringNode.asText();
+                        String apiKey = "AIzaSyCkWz2KCDytlt2H-E_KYRsFn59imGWQ0gs"; // Your API key
+                        String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-8b:generateContent?key=" + apiKey;
+
+                        String optionsPayload = createOptionsPayload(optionsMap);
+
+                        String jsonPayload = """
+                        {
+                            "contents": [{
+                                "parts": [{"text": "Question: %s\nOptions: %s\nExplanation: %s"}]
+                            }]
+                        }
+                        """.formatted(questionString, optionsPayload, answerExplanationNode.asText());
+                        //make API
+                        //call
+                        try {
+                            HttpClient client = HttpClient.newHttpClient();
+                            HttpRequest request = HttpRequest.newBuilder()
+                                    .uri(URI.create(url))
+                                    .header("Content-Type", "application/json")
+                                    .POST(BodyPublishers.ofString(jsonPayload))
+                                    .build();
+
+                            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+                            logging.logToOutput("Response code: " + response.statusCode());
+                            logging.logToOutput("Response body: " + response.body());
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        //TODO testing of these API calls
+                        //call
                         logging.logToOutput("***");
                         logging.logToOutput(answerExplanationNode.toString());
                         logging.logToOutput("***");
@@ -221,7 +283,17 @@ public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler { // 
         }
     }
 
-
+    private String createOptionsPayload(HashMap<String, String> optionsMap) {
+        StringBuilder optionsPayload = new StringBuilder();
+        for (Map.Entry<String, String> entry : optionsMap.entrySet()) {
+            optionsPayload.append(entry.getValue()).append(" | ");
+        }
+        // Remove the trailin |
+        if (!optionsPayload.isEmpty()) {
+            optionsPayload.setLength(optionsPayload.length() - 3);
+        }
+        return optionsPayload.toString();
+    }
     @Override
     public TextMessageToBeSentAction handleTextMessageToBeSent(InterceptedTextMessage interceptedTextMessage) {
         return TextMessageToBeSentAction.continueWith(interceptedTextMessage);
