@@ -79,7 +79,7 @@ public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler { // 
                             JsonNode optionNode = optionsNode.get(k).path("optionString");
                             JsonNode optionIdNode = optionsNode.get(k).path("optionId");
                             optionsMap.put(optionIdNode.asText(),optionNode.asText()); // ID: TEXT VALUE
-                            logging.logToOutput(optionIdNode.asText()+" - "+optionsMap.get(optionIdNode.asText()));
+                            logging.logToError(optionIdNode.asText()+" - "+optionsMap.get(optionIdNode.asText()));
                         }
                         JsonNode fiftyNode = ongoingNode.path("fiftyFiftyRemoveOptionIds");
                         for(int k=0;k<fiftyNode.size();k++){
@@ -87,9 +87,9 @@ public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler { // 
                         }
                         //hashmap should only contain 2 values 1 correct and 1 wrong
                         //print hashmap
-                        for(Map.Entry<String,String> entry: optionsMap.entrySet()){
-                            logging.logToOutput(entry.getKey()+" - "+entry.getValue());
-                        }
+//                        for(Map.Entry<String,String> entry: optionsMap.entrySet()){
+//                            logging.logToOutput(entry.getKey()+" - "+entry.getValue());
+//                        }
                         //we have question string, we have hashmap with 2 option rn and we have answer explanation
                         //craft API call
                         String questionString = questionStringNode.asText();
@@ -98,11 +98,12 @@ public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler { // 
 
                         String optionsPayload = createOptionsPayload(optionsMap);
 
-                        logging.logToOutput("OPTIONS: "+optionsPayload); //should contains 2 oiption
+                        logging.logToError("OPTIONS: "+optionsPayload); //should contains 2 oiption
                         questionString.replace('"',' ');
                         optionsPayload.replace('"',' ');
+                        String context=" As u can see there are 2 options , select the appropirate correct option based on question and its answer explanation and only give the correct option dont give explanation, if the option contains an image link (URL) only say the relevant name from the answer Explnation..";
                         String explanation = answerExplanationNode.asText().replace('"', ' ');
-                        String finalText= "Question: " + questionString + "Options: "+ optionsPayload + "answerExplanation :" + explanation;
+                        String finalText= "Question: " + questionString + " Options: "+ optionsPayload + " answerExplanation :" + explanation + "" + context;
                         finalText = finalText.replace("\\", "\\\\").replace("\"", "\\\"");
                         String jsonPayload = """
                         {
@@ -111,7 +112,7 @@ public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler { // 
                             }]
                         }
                         """.formatted(finalText);
-                        logging.logToOutput(jsonPayload);
+                        logging.logToError(jsonPayload);
                         //make API
                         //call
                         try {
@@ -123,9 +124,17 @@ public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler { // 
                                     .build();
 
                             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-                            logging.logToOutput("Response code: " + response.statusCode());
-                            logging.logToOutput("Response body: " + response.body());
+                            ObjectMapper mapper = new ObjectMapper();
+                            JsonNode root = mapper.readTree(response.body());
+                            String text = root.path("candidates")
+                                    .get(0)
+                                    .path("content")
+                                    .path("parts")
+                                    .get(0)
+                                    .path("text")
+                                    .asText();
+                            logging.logToError("Response code: " + response.statusCode());
+                            logging.logToOutput("Response: ========" + text);
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
