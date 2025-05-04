@@ -1,12 +1,18 @@
 package org.example;
-
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.net.http.HttpRequest.BodyPublishers;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Map;
 import java.util.TreeMap;
+import java.util.HashMap;
 import io.github.cdimascio.dotenv.Dotenv;
 
 import burp.api.montoya.websocket.*;
@@ -24,6 +30,7 @@ public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler { // 
 
     MontoyaApi api;
     Logging logging;
+    //for some reason i am not able to pull these secrets from env file please look into it
     final String botToken = "7853228648:AAFEYyTJ0WrjHYyuTkIy8O4lJNEpxW24Z6Q";
     final String chatId = "-1002321540121";
 
@@ -52,6 +59,9 @@ public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler { // 
 
                 // Log the rootNode to check its structure
                 //logging.logToOutput("Root Node: " + rootNode.toString());
+                //***************************
+                //TODO fix the messy code and refactor into diff functions PLEASE GIVE A LOOK for refactor
+                //***************************
 
                 // Check if the "data" node exists and log it
                 JsonNode dataNode = rootNode.path("data");
@@ -60,7 +70,89 @@ public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler { // 
                     //START ONGOING RESPONSE HERE
                     JsonNode ongoingNode = dataNode.path("ongoingQuestion");
                     if (!ongoingNode.isMissingNode()){
+                        HashMap<String,String> optionsMap = new HashMap<>();
                         JsonNode answerExplanationNode = ongoingNode.path("answerExplanation");
+                        JsonNode questionStringNode = ongoingNode.path("questionString");
+                        JsonNode optionsNode = ongoingNode.path("options");
+                        //len of option node is 4
+                        for(int k=0;k<optionsNode.size();k++){
+                            JsonNode optionNode = optionsNode.get(k).path("optionString");
+                            JsonNode optionIdNode = optionsNode.get(k).path("optionId");
+                            optionsMap.put(optionIdNode.asText(),optionNode.asText()); // ID: TEXT VALUE
+                            logging.logToError(optionIdNode.asText()+" - "+optionsMap.get(optionIdNode.asText()));
+                        }
+                        JsonNode fiftyNode = ongoingNode.path("fiftyFiftyRemoveOptionIds");
+                        for(int k=0;k<fiftyNode.size();k++){
+                            optionsMap.remove(fiftyNode.get(k).asText());
+                        }
+                        //hashmap should only contain 2 values 1 correct and 1 wrong
+                        //print hashmap
+//                        for(Map.Entry<String,String> entry: optionsMap.entrySet()){
+//                            logging.logToOutput(entry.getKey()+" - "+entry.getValue());
+//                        }
+                        //we have question string, we have hashmap with 2 option rn and we have answer explanation
+                        //craft API call
+                        String questionString = questionStringNode.asText();
+                        String apiKey = "AIzaSyCkWz2KCDytlt2H-E_KYRsFn59imGWQ0gs";
+                        String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-8b:generateContent?key=" + apiKey;
+
+                        String optionsPayload = createOptionsPayload(optionsMap);
+
+                        logging.logToError("OPTIONS: "+optionsPayload); //should contains 2 oiption
+                        questionString.replace('"',' ');
+                        optionsPayload.replace('"',' ');
+                        String context=" As u can see there are 2 options , select the appropirate correct option based on question and its answer explanation and only give the correct option dont give explanation, if the option contains an image link (URL) only say the relevant name from the answer Explnation..";
+                        String explanation = answerExplanationNode.asText().replace('"', ' ');
+                        String finalText= "Question: " + questionString + " Options: "+ optionsPayload + " answerExplanation :" + explanation + "" + context;
+                        finalText = finalText.replace("\\", "\\\\").replace("\"", "\\\"");
+                        String jsonPayload = """
+                        {
+                            "contents": [{
+                                "parts": [{"text": "%s"}]
+                            }]
+                        }
+                        """.formatted(finalText);
+                        logging.logToError(jsonPayload);
+                        //make API
+                        //call
+                        try {
+                            HttpClient client = HttpClient.newHttpClient();
+                            HttpRequest request = HttpRequest.newBuilder()
+                                    .uri(URI.create(url))
+                                    .header("Content-Type", "application/json")
+                                    .POST(BodyPublishers.ofString(jsonPayload))
+                                    .build();
+                            long startTime = System.currentTimeMillis();
+                            client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                                    .thenApply(HttpResponse::body)
+                                    .thenAccept(responseBody -> {
+                                        try {
+                                            ObjectMapper mapper = new ObjectMapper();
+                                            JsonNode root = mapper.readTree(responseBody);
+                                            String text = root.path("candidates")
+                                                    .get(0)
+                                                    .path("content")
+                                                    .path("parts")
+                                                    .get(0)
+                                                    .path("text")
+                                                    .asText();
+                                            long endTime = System.currentTimeMillis();
+                                            long timeTaken = endTime - startTime;
+                                            logging.logToOutput("Async response received. with time taken: " + timeTaken + " ms");
+                                            logging.logToOutput("Response: ======== " + text);
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                        }
+                                    })
+                                    .exceptionally(e -> {
+                                        e.printStackTrace();
+                                        return null;
+                                    });
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        //TODO testing of these API calls
+                        //call
                         logging.logToOutput("***");
                         logging.logToOutput(answerExplanationNode.toString());
                         logging.logToOutput("***");
@@ -221,7 +313,17 @@ public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler { // 
         }
     }
 
-
+    private String createOptionsPayload(HashMap<String, String> optionsMap) {
+        StringBuilder optionsPayload = new StringBuilder();
+        for (Map.Entry<String, String> entry : optionsMap.entrySet()) {
+            optionsPayload.append(entry.getValue()).append(" | ");
+        }
+        // Remove the trailin |
+        if (!optionsPayload.isEmpty()) {
+            optionsPayload.setLength(optionsPayload.length() - 3);
+        }
+        return optionsPayload.toString();
+    }
     @Override
     public TextMessageToBeSentAction handleTextMessageToBeSent(InterceptedTextMessage interceptedTextMessage) {
         return TextMessageToBeSentAction.continueWith(interceptedTextMessage);

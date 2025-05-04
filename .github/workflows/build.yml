@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master  # Trigger on commits to main
+      - krishgpt
   pull_request:
     branches:
       - '*'   # Trigger on PRs to any branch
