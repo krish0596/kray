@@ -45,6 +45,7 @@ public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler { // 
 
     @Override
     public TextMessageReceivedAction handleTextMessageReceived(InterceptedTextMessage interceptedTextMessage) {
+        long timeTakenTogetAnswer = 0;
         //logging.logToOutput("inside handleText");
         String jsonString="";
         if (interceptedTextMessage.payload() != null && interceptedTextMessage.payload().length() > 5 && interceptedTextMessage.direction()==Direction.SERVER_TO_CLIENT) {
@@ -152,7 +153,8 @@ public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler { // 
                             e.printStackTrace();
                         }
                         //TODO testing of these API calls
-                        //call
+                        //
+                        timeTakenTogetAnswer = System.currentTimeMillis();
                         logging.logToOutput("***");
                         logging.logToOutput(answerExplanationNode.toString());
                         logging.logToOutput("***");
@@ -236,6 +238,9 @@ public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler { // 
                                         sb.append("::");
                                 }
                             }
+                                long endTime = System.currentTimeMillis();
+                                long timeTaken = endTime - timeTakenTogetAnswer;
+                                logging.logToOutput("Time taken for Correct answer: " + timeTaken + " ms");
                                 logging.logToOutput(sb.toString());
                                 if(!sent)
                                 sendToTelegram(sb.toString());
