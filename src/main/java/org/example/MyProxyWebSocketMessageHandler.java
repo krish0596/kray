@@ -123,18 +123,29 @@ public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler { // 
                                     .POST(BodyPublishers.ofString(jsonPayload))
                                     .build();
 
-                            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-                            ObjectMapper mapper = new ObjectMapper();
-                            JsonNode root = mapper.readTree(response.body());
-                            String text = root.path("candidates")
-                                    .get(0)
-                                    .path("content")
-                                    .path("parts")
-                                    .get(0)
-                                    .path("text")
-                                    .asText();
-                            logging.logToError("Response code: " + response.statusCode());
-                            logging.logToOutput("Response: ========" + text);
+                            client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                                    .thenApply(HttpResponse::body)
+                                    .thenAccept(responseBody -> {
+                                        try {
+                                            ObjectMapper mapper = new ObjectMapper();
+                                            JsonNode root = mapper.readTree(responseBody);
+                                            String text = root.path("candidates")
+                                                    .get(0)
+                                                    .path("content")
+                                                    .path("parts")
+                                                    .get(0)
+                                                    .path("text")
+                                                    .asText();
+                                            logging.logToError("Async response received.");
+                                            logging.logToOutput("Response: ========" + text);
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                        }
+                                    })
+                                    .exceptionally(e -> {
+                                        e.printStackTrace();
+                                        return null;
+                                    });
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
