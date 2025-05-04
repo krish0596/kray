@@ -138,7 +138,7 @@ public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler { // 
                                                     .asText();
                                             long endTime = System.currentTimeMillis();
                                             long timeTaken = endTime - startTime;
-                                            logging.logToError("Async response received. with time taken: " + timeTaken + " ms");
+                                            logging.logToOutput("Async response received. with time taken: " + timeTaken + " ms");
                                             logging.logToOutput("Response: ======== " + text);
                                         } catch (Exception e) {
                                             e.printStackTrace();
