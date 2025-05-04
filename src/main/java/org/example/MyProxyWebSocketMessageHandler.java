@@ -60,7 +60,7 @@ public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler { // 
                 // Log the rootNode to check its structure
                 //logging.logToOutput("Root Node: " + rootNode.toString());
                 //***************************
-                //TODO fix the messy code and refactor into diff functions and NIKET PLEASE GIVE A LOOK for refactor
+                //TODO fix the messy code and refactor into diff functions PLEASE GIVE A LOOK for refactor
                 //***************************
 
                 // Check if the "data" node exists and log it
@@ -78,7 +78,7 @@ public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler { // 
                         for(int k=0;k<optionsNode.size();k++){
                             JsonNode optionNode = optionsNode.get(k).path("optionString");
                             JsonNode optionIdNode = optionsNode.get(k).path("optionId");
-                            optionsMap.put(optionIdNode.asText(),optionNode.asText());
+                            optionsMap.put(optionIdNode.asText(),optionNode.asText()); // ID: TEXT VALUE
                             logging.logToOutput(optionIdNode.asText()+" - "+optionsMap.get(optionIdNode.asText()));
                         }
                         JsonNode fiftyNode = ongoingNode.path("fiftyFiftyRemoveOptionIds");
@@ -91,12 +91,14 @@ public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler { // 
                             logging.logToOutput(entry.getKey()+" - "+entry.getValue());
                         }
                         //we have question string, we have hashmap with 2 option rn and we have answer explanation
-                        //make API
+                        //craft API call
                         String questionString = questionStringNode.asText();
-                        String apiKey = "AIzaSyCkWz2KCDytlt2H-E_KYRsFn59imGWQ0gs"; // Your API key
+                        String apiKey = "AIzaSyCkWz2KCDytlt2H-E_KYRsFn59imGWQ0gs";
                         String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-8b:generateContent?key=" + apiKey;
 
                         String optionsPayload = createOptionsPayload(optionsMap);
+
+                        logging.logToOutput("OPTIONS: "+optionsPayload); //should contains 2 oiption
 
                         String jsonPayload = """
                         {
