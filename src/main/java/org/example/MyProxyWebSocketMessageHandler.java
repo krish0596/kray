@@ -99,14 +99,18 @@ public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler { // 
                         String optionsPayload = createOptionsPayload(optionsMap);
 
                         logging.logToOutput("OPTIONS: "+optionsPayload); //should contains 2 oiption
-
+                        questionString.replace('"',' ');
+                        optionsPayload.replace('"',' ');
+                        String explanation = answerExplanationNode.asText().replace('"', ' ');
+                        String finalText= "Question: " + questionString + "Options: "+ optionsPayload + "answerExplanation :" + explanation;
+                        finalText = finalText.replace("\\", "\\\\").replace("\"", "\\\"");
                         String jsonPayload = """
                         {
                             "contents": [{
-                                "parts": [{"text": "Question: %s\nOptions: %s\nExplanation: %s"}]
+                                "parts": [{"text": "%s"}]
                             }]
                         }
-                        """.formatted(questionString, optionsPayload, answerExplanationNode.asText());
+                        """.formatted(finalText);
                         logging.logToOutput(jsonPayload);
                         //make API
                         //call
