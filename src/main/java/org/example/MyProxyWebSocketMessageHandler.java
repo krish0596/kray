@@ -107,6 +107,7 @@ public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler { // 
                             }]
                         }
                         """.formatted(questionString, optionsPayload, answerExplanationNode.asText());
+                        logging.logToOutput(jsonPayload);
                         //make API
                         //call
                         try {
