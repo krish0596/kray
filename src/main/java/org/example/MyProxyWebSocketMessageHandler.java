@@ -122,7 +122,7 @@ public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler { // 
                                     .header("Content-Type", "application/json")
                                     .POST(BodyPublishers.ofString(jsonPayload))
                                     .build();
-
+                            long startTime = System.currentTimeMillis();
                             client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
                                     .thenApply(HttpResponse::body)
                                     .thenAccept(responseBody -> {
@@ -136,8 +136,10 @@ public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler { // 
                                                     .get(0)
                                                     .path("text")
                                                     .asText();
-                                            logging.logToError("Async response received.");
-                                            logging.logToOutput("Response: ========" + text);
+                                            long endTime = System.currentTimeMillis();
+                                            long timeTaken = endTime - startTime;
+                                            logging.logToError("Async response received. with time taken: " + timeTaken + " ms");
+                                            logging.logToOutput("Response: ======== " + text);
                                         } catch (Exception e) {
                                             e.printStackTrace();
                                         }
