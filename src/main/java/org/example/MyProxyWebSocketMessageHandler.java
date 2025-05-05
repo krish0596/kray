@@ -96,16 +96,22 @@ public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler { // 
                         String finalText= "Question: " + questionString + " Options: "+ optionsPayload + " answerExplanation :" + explanation;
                         finalText = finalText.replace("\\", "\\\\").replace("\"", "\\\"");
 
-                        GeminiAPIClient geminiClient = new GeminiAPIClient(finalText);
+                        //GeminiAPIClient geminiClient = new GeminiAPIClient(finalText);
                         MistralAPIClient mistralClient = new MistralAPIClient(finalText);
                         long startTime = System.currentTimeMillis();
-                        geminiClient.getResponse().thenAccept(resultGemini ->{
-                            long elapsed = System.currentTimeMillis() - startTime;
-                            logging.logToOutput("Gemini response: " + resultGemini + " took " + elapsed + " ms");
-                        });
+//                        geminiClient.getResponse().thenAccept(resultGemini ->{
+//                            long elapsed = System.currentTimeMillis() - startTime;
+//                            logging.logToOutput("Gemini response: " + resultGemini + " took " + elapsed + " ms");
+//                        });
                         mistralClient.getResponse().thenAccept(resultMistral ->{
                             long elapsed = System.currentTimeMillis() - startTime;
-                            logging.logToOutput("Mistral response: " + resultMistral + " took " + elapsed + " ms");
+                            String boxedMessage = String.format("""
+                                        ***************
+                                        * %s
+                                        * Took: %d ms
+                                        ***************
+                                        """, resultMistral, elapsed);
+                            logging.logToOutput(boxedMessage);
                         });
                         //TODO testing of these API calls//
                         timeTakenTogetAnswer = System.currentTimeMillis();
@@ -133,41 +139,26 @@ public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler { // 
                                 logging.logToOutput("------ "+length);
                                 StringBuilder sb =new StringBuilder();
                                 Boolean sent=false;
-
                                 TreeMap<String, String> optionIdtoAnswer = new TreeMap<>();
-
                                 JsonNode questionString = userResponsesNode.get(reslength - 1).path("questionString");
                                 String questionLowerCase = questionString.toString().toLowerCase();
-
                                 Boolean isAMatchQuestion = false;
-
                                 if(questionLowerCase.contains("match" ) || questionLowerCase.contains("arrange" )){
                                     int lengthUserSelectedOption = userSelectedOptionsNode.size();
-
                                     logging.logToOutput("match or arrange task");
-
                                     for(int j = 0; j < lengthUserSelectedOption; j ++){
                                         JsonNode optionStringNode = userSelectedOptionsNode.get(j).path("optionString");
                                         JsonNode optionIdNode = userSelectedOptionsNode.get(j).path("optionId");
-
                                         optionIdtoAnswer.put(optionIdNode.toString(), optionStringNode.toString());
                                     }
-
                                     StringBuilder stb = new StringBuilder();
-
                                     for(String s: optionIdtoAnswer.keySet()){
                                         stb.append(optionIdtoAnswer.get(s));
                                         stb.append(">>>");
                                     }
-
-                                    if(stb.length() > 0){
-                                        logging.logToOutput(stb.toString());
-                                    }
-                                    
+                                    if(stb.length() > 0)logging.logToOutput(stb.toString());
                                     optionIdtoAnswer.clear();
-
-                                   isAMatchQuestion = true;
-
+                                    isAMatchQuestion = true;
                                 }
                                 
                                 if(!isAMatchQuestion){
