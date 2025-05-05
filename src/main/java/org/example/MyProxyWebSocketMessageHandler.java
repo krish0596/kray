@@ -42,7 +42,7 @@ public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler { // 
         this.logging = api.logging();
         //logging.logToOutput("all working2");
     }
-
+    //IF we PASS this API LOGGING AS THE OBJECT TO CLASS GEMINI MISTRAL THAT WILL BE CALLED CONSTRUCTOR INJECTON AKA DEPENDENCY INJECTION
     @Override
     public TextMessageReceivedAction handleTextMessageReceived(InterceptedTextMessage interceptedTextMessage) {
         long timeTakenTogetAnswer = 0;
