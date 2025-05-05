@@ -97,6 +97,7 @@ public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler { // 
                         finalText = finalText.replace("\\", "\\\\").replace("\"", "\\\"");
 
                         //GeminiAPIClient geminiClient = new GeminiAPIClient(finalText);
+                        //INSTEAD OF CALLING A NEW OBJECT everytime WE CAN ALSO IMPLEMENT A SINGLETON PATTERN
                         MistralAPIClient mistralClient = new MistralAPIClient(finalText);
                         long startTime = System.currentTimeMillis();
 //                        geminiClient.getResponse().thenAccept(resultGemini ->{
