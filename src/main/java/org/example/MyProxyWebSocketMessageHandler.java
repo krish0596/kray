@@ -101,11 +101,11 @@ public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler { // 
                         long startTime = System.currentTimeMillis();
                         geminiClient.getResponse().thenAccept(resultGemini ->{
                             long elapsed = System.currentTimeMillis() - startTime;
-                            System.out.println("Gemini response: " + resultGemini + " took " + elapsed + " ms");
+                            logging.logToOutput("Gemini response: " + resultGemini + " took " + elapsed + " ms");
                         });
                         mistralClient.getResponse().thenAccept(resultMistral ->{
                             long elapsed = System.currentTimeMillis() - startTime;
-                            System.out.println("Mistral response: " + resultMistral + " took " + elapsed + " ms");
+                            logging.logToOutput("Mistral response: " + resultMistral + " took " + elapsed + " ms");
                         });
                         //TODO testing of these API calls//
                         timeTakenTogetAnswer = System.currentTimeMillis();
