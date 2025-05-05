@@ -86,74 +86,28 @@ public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler { // 
                         for(int k=0;k<fiftyNode.size();k++){
                             optionsMap.remove(fiftyNode.get(k).asText());
                         }
-                        //hashmap should only contain 2 values 1 correct and 1 wrong
-                        //print hashmap
-//                        for(Map.Entry<String,String> entry: optionsMap.entrySet()){
-//                            logging.logToOutput(entry.getKey()+" - "+entry.getValue());
-//                        }
-                        //we have question string, we have hashmap with 2 option rn and we have answer explanation
-                        //craft API call
                         String questionString = questionStringNode.asText();
-                        String apiKey = "AIzaSyCkWz2KCDytlt2H-E_KYRsFn59imGWQ0gs";
-                        String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-8b:generateContent?key=" + apiKey;
-
                         String optionsPayload = createOptionsPayload(optionsMap);
 
                         logging.logToError("OPTIONS: "+optionsPayload); //should contains 2 oiption
                         questionString.replace('"',' ');
                         optionsPayload.replace('"',' ');
-                        String context=" As u can see there are 2 options , select the appropirate correct option based on question and its answer explanation and only give the correct option dont give explanation, if the option contains an image link (URL) only say the relevant name from the answer Explnation..";
                         String explanation = answerExplanationNode.asText().replace('"', ' ');
-                        String finalText= "Question: " + questionString + " Options: "+ optionsPayload + " answerExplanation :" + explanation + "" + context;
+                        String finalText= "Question: " + questionString + " Options: "+ optionsPayload + " answerExplanation :" + explanation;
                         finalText = finalText.replace("\\", "\\\\").replace("\"", "\\\"");
-                        String jsonPayload = """
-                        {
-                            "contents": [{
-                                "parts": [{"text": "%s"}]
-                            }]
-                        }
-                        """.formatted(finalText);
-                        logging.logToError(jsonPayload);
-                        //make API
-                        //call
-                        try {
-                            HttpClient client = HttpClient.newHttpClient();
-                            HttpRequest request = HttpRequest.newBuilder()
-                                    .uri(URI.create(url))
-                                    .header("Content-Type", "application/json")
-                                    .POST(BodyPublishers.ofString(jsonPayload))
-                                    .build();
-                            long startTime = System.currentTimeMillis();
-                            client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
-                                    .thenApply(HttpResponse::body)
-                                    .thenAccept(responseBody -> {
-                                        try {
-                                            ObjectMapper mapper = new ObjectMapper();
-                                            JsonNode root = mapper.readTree(responseBody);
-                                            String text = root.path("candidates")
-                                                    .get(0)
-                                                    .path("content")
-                                                    .path("parts")
-                                                    .get(0)
-                                                    .path("text")
-                                                    .asText();
-                                            long endTime = System.currentTimeMillis();
-                                            long timeTaken = endTime - startTime;
-                                            logging.logToOutput("Async response received. with time taken: " + timeTaken + " ms");
-                                            logging.logToOutput("Response: ======== " + text);
-                                        } catch (Exception e) {
-                                            e.printStackTrace();
-                                        }
-                                    })
-                                    .exceptionally(e -> {
-                                        e.printStackTrace();
-                                        return null;
-                                    });
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                        //TODO testing of these API calls
-                        //
+
+                        GeminiAPIClient geminiClient = new GeminiAPIClient(finalText);
+                        MistralAPIClient mistralClient = new MistralAPIClient(finalText);
+                        long startTime = System.currentTimeMillis();
+                        geminiClient.getResponse().thenAccept(resultGemini ->{
+                            long elapsed = System.currentTimeMillis() - startTime;
+                            System.out.println("Gemini response: " + resultGemini + " took " + elapsed + " ms");
+                        });
+                        mistralClient.getResponse().thenAccept(resultMistral ->{
+                            long elapsed = System.currentTimeMillis() - startTime;
+                            System.out.println("Mistral response: " + resultMistral + " took " + elapsed + " ms");
+                        });
+                        //TODO testing of these API calls//
                         timeTakenTogetAnswer = System.currentTimeMillis();
                         logging.logToOutput("***");
                         logging.logToOutput(answerExplanationNode.toString());
