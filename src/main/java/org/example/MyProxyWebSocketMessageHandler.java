@@ -98,22 +98,22 @@ public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler { // 
 
                         //GeminiAPIClient geminiClient = new GeminiAPIClient(finalText);
                         //INSTEAD OF CALLING A NEW OBJECT everytime WE CAN ALSO IMPLEMENT A SINGLETON PATTERN
-                        MistralAPIClient mistralClient = new MistralAPIClient(finalText);
-                        long startTime = System.currentTimeMillis();
-//                        geminiClient.getResponse().thenAccept(resultGemini ->{
+//                        MistralAPIClient mistralClient = new MistralAPIClient(finalText);
+//                        long startTime = System.currentTimeMillis();
+////                        geminiClient.getResponse().thenAccept(resultGemini ->{
+////                            long elapsed = System.currentTimeMillis() - startTime;
+////                            logging.logToOutput("Gemini response: " + resultGemini + " took " + elapsed + " ms");
+////                        });
+//                        mistralClient.getResponse().thenAccept(resultMistral ->{
 //                            long elapsed = System.currentTimeMillis() - startTime;
-//                            logging.logToOutput("Gemini response: " + resultGemini + " took " + elapsed + " ms");
+//                            String boxedMessage = String.format("""
+//                                        ***************
+//                                        * %s
+//                                        * Took: %d ms
+//                                        ***************
+//                                        """, resultMistral, elapsed);
+//                            logging.logToOutput(boxedMessage);
 //                        });
-                        mistralClient.getResponse().thenAccept(resultMistral ->{
-                            long elapsed = System.currentTimeMillis() - startTime;
-                            String boxedMessage = String.format("""
-                                        ***************
-                                        * %s
-                                        * Took: %d ms
-                                        ***************
-                                        """, resultMistral, elapsed);
-                            logging.logToOutput(boxedMessage);
-                        });
                         //TODO testing of these API calls//
                         timeTakenTogetAnswer = System.currentTimeMillis();
                         logging.logToOutput("***");
