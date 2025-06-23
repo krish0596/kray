@@ -22,31 +22,26 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import burp.api.montoya.MontoyaApi;
 import burp.api.montoya.logging.Logging;
-import burp.api.montoya.proxy.websocket.ProxyMessageHandler; // Import ProxyMessageHandler
+import burp.api.montoya.proxy.websocket.ProxyMessageHandler;
 import burp.api.montoya.core.HighlightColor;
 import burp.api.montoya.proxy.websocket.*;
 
 import static burp.api.montoya.websocket.Direction.CLIENT_TO_SERVER;
-public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler { // Change to implement ProxyMessageHandler
+public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler {
 
     MontoyaApi api;
     Logging logging;
-    //for some reason i am not able to pull these secrets from env file please look into it
+
     final String botToken = "7853228648:AAFEYyTJ0WrjHYyuTkIy8O4lJNEpxW24Z6Q";
     final String chatId = "-1002321540121";
 
-
     public MyProxyWebSocketMessageHandler(MontoyaApi api) {
-        // Save a reference to the MontoyaApi object
         this.api = api;
-        // Save a reference to the logging object, to print messages to stdout and stderr
         this.logging = api.logging();
-        //logging.logToOutput("all working2");
     }
     //IF we PASS this API LOGGING AS THE OBJECT TO CLASS GEMINI MISTRAL THAT WILL BE CALLED CONSTRUCTOR INJECTON AKA DEPENDENCY INJECTION
     @Override
     public TextMessageReceivedAction handleTextMessageReceived(InterceptedTextMessage interceptedTextMessage) {
-        long timeTakenTogetAnswer = 0;
         //logging.logToOutput("inside handleText");
         String jsonString="";
         if (interceptedTextMessage.payload() != null && interceptedTextMessage.payload().length() > 5 && interceptedTextMessage.direction()==Direction.SERVER_TO_CLIENT) {
@@ -61,62 +56,15 @@ public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler { // 
 
                 // Log the rootNode to check its structure
                 //logging.logToOutput("Root Node: " + rootNode.toString());
-                //***************************
-                //TODO fix the messy code and refactor into diff functions PLEASE GIVE A LOOK for refactor
-                //***************************
-
                 // Check if the "data" node exists and log it
+
                 JsonNode dataNode = rootNode.path("data");
                 //logging.logToOutput("Data Node: " + dataNode.toString());
                 if (!dataNode.isMissingNode()) {
                     //START ONGOING RESPONSE HERE
                     JsonNode ongoingNode = dataNode.path("ongoingQuestion");
                     if (!ongoingNode.isMissingNode()){
-                        HashMap<String,String> optionsMap = new HashMap<>();
                         JsonNode answerExplanationNode = ongoingNode.path("answerExplanation");
-                        JsonNode questionStringNode = ongoingNode.path("questionString");
-                        JsonNode optionsNode = ongoingNode.path("options");
-                        //len of option node is 4
-                        for(int k=0;k<optionsNode.size();k++){
-                            JsonNode optionNode = optionsNode.get(k).path("optionString");
-                            JsonNode optionIdNode = optionsNode.get(k).path("optionId");
-                            optionsMap.put(optionIdNode.asText(),optionNode.asText()); // ID: TEXT VALUE
-                            logging.logToError(optionIdNode.asText()+" - "+optionsMap.get(optionIdNode.asText()));
-                        }
-                        JsonNode fiftyNode = ongoingNode.path("fiftyFiftyRemoveOptionIds");
-                        for(int k=0;k<fiftyNode.size();k++){
-                            optionsMap.remove(fiftyNode.get(k).asText());
-                        }
-                        String questionString = questionStringNode.asText();
-                        String optionsPayload = createOptionsPayload(optionsMap);
-
-                        logging.logToError("OPTIONS: "+optionsPayload); //should contains 2 oiption
-                        questionString.replace('"',' ');
-                        optionsPayload.replace('"',' ');
-                        String explanation = answerExplanationNode.asText().replace('"', ' ');
-                        String finalText= "Question: " + questionString + " Options: "+ optionsPayload + " answerExplanation :" + explanation;
-                        finalText = finalText.replace("\\", "\\\\").replace("\"", "\\\"");
-
-                        //GeminiAPIClient geminiClient = new GeminiAPIClient(finalText);
-                        //INSTEAD OF CALLING A NEW OBJECT everytime WE CAN ALSO IMPLEMENT A SINGLETON PATTERN
-                        MistralAPIClient mistralClient = new MistralAPIClient(finalText,logging);
-                        long startTime = System.currentTimeMillis();
-//                        geminiClient.getResponse().thenAccept(resultGemini ->{
-//                            long elapsed = System.currentTimeMillis() - startTime;
-//                            logging.logToOutput("Gemini response: " + resultGemini + " took " + elapsed + " ms");
-//                        });
-                        mistralClient.getResponse().thenAccept(resultMistral ->{
-                            long elapsed = System.currentTimeMillis() - startTime;
-                            String boxedMessage = String.format("""
-                                        ***************
-                                        * %s
-                                        * Took: %d ms
-                                        ***************
-                                        """, resultMistral, elapsed);
-                            logging.logToOutput(boxedMessage);
-                        });
-                        //TODO testing of these API calls//
-                        timeTakenTogetAnswer = System.currentTimeMillis();
                         logging.logToOutput("***");
                         logging.logToOutput(answerExplanationNode.toString());
                         logging.logToOutput("***");
@@ -127,7 +75,6 @@ public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler { // 
                     JsonNode mcqResponseNode = dataNode.path("mcqResponse");
                     //logging.logToOutput("mcqResponse Node: " + mcqResponseNode.toString());
                     if (!mcqResponseNode.isMissingNode()) {
-                        // Check if "userResponses" exists
                         JsonNode userResponsesNode = mcqResponseNode.path("userResponses");
                         //logging.logToOutput("userResponses Node: " + userResponsesNode.toString());
                         if (!userResponsesNode.isMissingNode() && userResponsesNode.isArray() && userResponsesNode.size() > 0) {
@@ -185,9 +132,6 @@ public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler { // 
                                         sb.append("::");
                                 }
                             }
-                                long endTime = System.currentTimeMillis();
-                                long timeTaken = endTime - timeTakenTogetAnswer;
-                                logging.logToOutput("Time taken for Correct answer: " + timeTaken + " ms");
                                 logging.logToOutput(sb.toString());
                                 if(!sent)
                                 sendToTelegram(sb.toString());
@@ -207,9 +151,6 @@ public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler { // 
                 logging.logToError("Error processing message: " + e.getMessage());
             }
         }
-
-
-
         return TextMessageReceivedAction.continueWith(interceptedTextMessage);
     }
     private void sendToTelegram(String message) {
