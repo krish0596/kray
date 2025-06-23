@@ -1,11 +1,12 @@
 package org.example;
 
+import burp.api.montoya.logging.Logging;
+
 import java.util.concurrent.CompletableFuture;
 //for testing purpose
 public class APITest {
     public static void main(String[] args) {
         String content  = "capital of india?";
-
         MistralAPIClient client = new MistralAPIClient(content);
         GeminiAPIClient geminiClient = new GeminiAPIClient(content);
         CompletableFuture<String> futureResponse1 = geminiClient.getResponse();

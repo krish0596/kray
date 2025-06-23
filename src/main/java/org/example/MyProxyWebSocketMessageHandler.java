@@ -13,6 +13,8 @@ import java.net.URL;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.HashMap;
+
+import com.fasterxml.jackson.annotation.JacksonInject;
 import io.github.cdimascio.dotenv.Dotenv;
 
 import burp.api.montoya.websocket.*;
@@ -25,7 +27,6 @@ import burp.api.montoya.core.HighlightColor;
 import burp.api.montoya.proxy.websocket.*;
 
 import static burp.api.montoya.websocket.Direction.CLIENT_TO_SERVER;
-
 public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler { // Change to implement ProxyMessageHandler
 
     MontoyaApi api;
@@ -98,22 +99,22 @@ public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler { // 
 
                         //GeminiAPIClient geminiClient = new GeminiAPIClient(finalText);
                         //INSTEAD OF CALLING A NEW OBJECT everytime WE CAN ALSO IMPLEMENT A SINGLETON PATTERN
-//                        MistralAPIClient mistralClient = new MistralAPIClient(finalText);
-//                        long startTime = System.currentTimeMillis();
-////                        geminiClient.getResponse().thenAccept(resultGemini ->{
-////                            long elapsed = System.currentTimeMillis() - startTime;
-////                            logging.logToOutput("Gemini response: " + resultGemini + " took " + elapsed + " ms");
-////                        });
-//                        mistralClient.getResponse().thenAccept(resultMistral ->{
+                        MistralAPIClient mistralClient = new MistralAPIClient(finalText,logging);
+                        long startTime = System.currentTimeMillis();
+//                        geminiClient.getResponse().thenAccept(resultGemini ->{
 //                            long elapsed = System.currentTimeMillis() - startTime;
-//                            String boxedMessage = String.format("""
-//                                        ***************
-//                                        * %s
-//                                        * Took: %d ms
-//                                        ***************
-//                                        """, resultMistral, elapsed);
-//                            logging.logToOutput(boxedMessage);
+//                            logging.logToOutput("Gemini response: " + resultGemini + " took " + elapsed + " ms");
 //                        });
+                        mistralClient.getResponse().thenAccept(resultMistral ->{
+                            long elapsed = System.currentTimeMillis() - startTime;
+                            String boxedMessage = String.format("""
+                                        ***************
+                                        * %s
+                                        * Took: %d ms
+                                        ***************
+                                        """, resultMistral, elapsed);
+                            logging.logToOutput(boxedMessage);
+                        });
                         //TODO testing of these API calls//
                         timeTakenTogetAnswer = System.currentTimeMillis();
                         logging.logToOutput("***");

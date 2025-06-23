@@ -1,5 +1,6 @@
 package org.example;
 
+import burp.api.montoya.logging.Logging;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -10,6 +11,7 @@ import java.net.http.HttpResponse;
 import java.util.concurrent.CompletableFuture;
 
 public class MistralAPIClient {
+    Logging logging;
     String apiKey = "ZFxP7tFijiTTFne0Q4ONlBRooyFYOj1y";
     String agentId = "ag:a634815b:20250505:untitled-agent:ff4496a1";
     String apiUrl = "https://api.mistral.ai/v1/agents/completions";
@@ -17,6 +19,10 @@ public class MistralAPIClient {
 
     MistralAPIClient(String content) {
         this.content = content;
+    }
+    MistralAPIClient(String content, Logging logging) {
+        this.content = content;
+        this.logging = logging;
     }
     // MISTRAL CODELSTRA
     public CompletableFuture<String> getResponse() {
