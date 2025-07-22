@@ -1,6 +1,7 @@
 package org.example;
 
-import burp.api.montoya.logging.Logging;
+import org.example.apiClients.GeminiAPIClient;
+import org.example.apiClients.MistralAPIClient;
 
 import java.util.concurrent.CompletableFuture;
 //for testing purpose

@@ -14,7 +14,7 @@ public class ProxyWebSocketHandlerExample implements BurpExtension {
 
         this.api=api;
         this.logging=api.logging();
-        api.extension().setName("Montoya API tutorial - Websocket exp");
+        api.extension().setName("Montoyo API - Krish version 1.0.2");
         this.logging.logToOutput("*** Montoya API tutorial - Webs loaded ***");
         api.proxy().registerWebSocketCreationHandler(new MyProxyWebSocketCreationHandler(api));
     }

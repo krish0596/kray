@@ -1,5 +1,6 @@
-package org.example;
+package org.example.apiClients;
 
+import burp.api.montoya.logging.Logging;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -9,30 +10,37 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.concurrent.CompletableFuture;
 
-public class GeminiAPIClient {
-    String apiKey = "AIzaSyCkWz2KCDytlt2H-E_KYRsFn59imGWQ0gs";
-    String apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-8b:generateContent?key=" + apiKey;
+public class MistralAPIClient {
+    Logging logging;
+    String apiKey = "ZFxP7tFijiTTFne0Q4ONlBRooyFYOj1y";
+    String agentId = "ag:a634815b:20250505:untitled-agent:ff4496a1";
+    String apiUrl = "https://api.mistral.ai/v1/agents/completions";
     String content;
-    String context=" As u can see there are 2 options , select the appropirate correct option based on question and its answer explanation and only give the correct option dont give explanation, if the option contains an image link (URL) only say the relevant name from the answer Explnation..";
 
-
-    GeminiAPIClient(String content) {
+    public MistralAPIClient(String content) {
         this.content = content;
+    }
+    MistralAPIClient(String content, Logging logging) {
+        this.content = content;
+        this.logging = logging;
     }
     // MISTRAL CODELSTRA
     public CompletableFuture<String> getResponse() {
         // Create the JSON payload for the request
         String jsonPayload = """
-                        {
-                            "contents": [{
-                                "parts": [{"text": "%s"}]
-                            }]
-                        }
-                        """.formatted(content +" " +context);
+            {
+                "agent_id": "%s",
+                "messages": [{
+                        "role": "user",
+                        "content": "%s"
+                }]
+            }
+        """.formatted(agentId, content);
 
         HttpClient httpClient = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(apiUrl))
+                .header("Authorization", "Bearer " + apiKey)
                 .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(jsonPayload))
                 .build();
@@ -42,12 +50,10 @@ public class GeminiAPIClient {
                     try {
                         ObjectMapper mapper = new ObjectMapper();
                         JsonNode root = mapper.readTree(responseBody.body());
-                        String text = root.path("candidates")
+                        String text = root.path("choices")
                                 .get(0)
+                                .path("message")
                                 .path("content")
-                                .path("parts")
-                                .get(0)
-                                .path("text")
                                 .asText();
                         return text;
                     } catch (Exception e) {
