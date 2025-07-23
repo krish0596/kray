@@ -3,29 +3,16 @@ package org.example.actions;
 import burp.api.montoya.MontoyaApi;
 import burp.api.montoya.logging.Logging;
 import burp.api.montoya.proxy.websocket.InterceptedTextMessage;
-import burp.api.montoya.proxy.websocket.TextMessageReceivedAction;
 import burp.api.montoya.websocket.Direction;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.apiClients.TelegramClient;
-
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.TreeMap;
 
 public class InspectWebSocketMessage {
-    InterceptedTextMessage inspectMessage;
     Logging logging;
 
-
-    public InspectWebSocketMessage(InterceptedTextMessage inspectMessage, Logging logging) {
-        this.inspectMessage = inspectMessage;
+    public InspectWebSocketMessage( Logging logging) {
         this.logging = logging;
     }
 
@@ -78,8 +65,11 @@ public class InspectWebSocketMessage {
                                 TreeMap<String, String> optionIdtoAnswer = new TreeMap<>();
                                 JsonNode questionString = userResponsesNode.get(reslength - 1).path("questionString");
                                 String questionLowerCase = questionString.toString().toLowerCase();
+                                //logging.logToOutput("questionLower" + questionLowerCase);
                                 Boolean isAMatchQuestion = false;
+
                                 if (questionLowerCase.contains("match") || questionLowerCase.contains("arrange")) {
+                                    logging.logToOutput("inside match");
                                     int lengthUserSelectedOption = userSelectedOptionsNode.size();
                                     logging.logToOutput("match or arrange task");
                                     for (int j = 0; j < lengthUserSelectedOption; j++) {
@@ -100,20 +90,22 @@ public class InspectWebSocketMessage {
                                 if (!isAMatchQuestion) {
 
                                     for (int i = 0; i < length; i++) {
-
+                                        //logging.logToOutput("inside length");
                                         JsonNode JsonNodeCorrectOption = correctOptionsNode.get(i).path("optionString");
                                         //new line
                                         JsonNode JsonNodeCorrectImage = correctOptionsNode.get(i).path("optionSupportingMedia");
                                         if (!JsonNodeCorrectImage.isMissingNode() && JsonNodeCorrectImage.size() > 0) {
                                             JsonNode JsonNodeTrueImage = JsonNodeCorrectImage.path("thumbnailCfUrl");
                                             if (!JsonNodeTrueImage.isMissingNode()) {
-                                                TelegramClient tele = new TelegramClient(JsonNodeTrueImage.toString());
-                                                tele.sendToTelegram(JsonNodeTrueImage.toString());
+//                                                TelegramClient tele = new TelegramClient(JsonNodeTrueImage.toString());
+//                                                tele.sendToTelegram(JsonNodeTrueImage.toString());
+                                                //logging.logToOutput("Hello");
                                                 sb.append(JsonNodeTrueImage.toString());
                                                 sb.append(" ");
                                                 sent = true;
                                             }
                                         } else {
+
                                             sb.append(JsonNodeCorrectOption.toString());
                                         }
                                         if (i != length - 1)
@@ -141,5 +133,4 @@ public class InspectWebSocketMessage {
             }
         }
     }
-
 }
