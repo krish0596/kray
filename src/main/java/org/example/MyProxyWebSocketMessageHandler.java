@@ -128,7 +128,7 @@ public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler {
                                             logging.logToOutput(images);
                                         }
                                     } else {
-                                        sb.append(JsonNodeCorrectOption.toString());
+                                        sb.append(JsonNodeCorrectOption.asText());
                                     }
                                     if (i != length - 1)
                                         sb.append("::");
