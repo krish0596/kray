@@ -120,10 +120,12 @@ public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler {
                                     if (!JsonNodeCorrectImage.isMissingNode() && JsonNodeCorrectImage.size() > 0) {
                                         JsonNode JsonNodeTrueImage = JsonNodeCorrectImage.path("thumbnailCfUrl");
                                         if (!JsonNodeTrueImage.isMissingNode()) {
-                                            sendToTelegram(JsonNodeTrueImage.toString());
-                                            sb.append(JsonNodeTrueImage.toString());
-                                            sb.append(" ");
-                                            sent = true;
+                                            //sendToTelegram(JsonNodeTrueImage.toString());
+                                            //sb.append(JsonNodeTrueImage.toString());
+                                            //sb.append(" ");
+                                            //sent = true;
+                                            String images = convertToImgTag(JsonNodeCorrectImage.asText(),"alt test",300,300);
+                                            logging.logToOutput(images);
                                         }
                                     } else {
                                         sb.append(JsonNodeCorrectOption.toString());
@@ -230,5 +232,10 @@ public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler {
     @Override
     public BinaryMessageToBeSentAction handleBinaryMessageToBeSent(InterceptedBinaryMessage interceptedBinaryMessage) {
         return BinaryMessageToBeSentAction.continueWith(interceptedBinaryMessage);
+    }
+
+    public String convertToImgTag(String imageUrl, String altText, int width, int height) {
+        return String.format("<img src=\"%s\" alt=\"%s\" width=\"%d\" height=\"%d\" />",
+                imageUrl, altText, width, height);
     }
 }
