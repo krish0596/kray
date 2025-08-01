@@ -124,7 +124,7 @@ public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler {
                                             //sb.append(JsonNodeTrueImage.toString());
                                             //sb.append(" ");
                                             //sent = true;
-                                            String images = convertToImgTag(JsonNodeCorrectImage.asText(),"alt test",300,300);
+                                            String images = convertToImgTag(JsonNodeTrueImage.asText(),"alt test",300,300);
                                             logging.logToOutput(images);
                                         }
                                     } else {
