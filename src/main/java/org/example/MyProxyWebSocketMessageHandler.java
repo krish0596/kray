@@ -132,9 +132,9 @@ public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler {
                                     }
                                     if (i != length - 1)
                                         sb.append("::");
+                                    }
                                 }
-                            }
-                                logging.logToOutput(sb.toString());
+                                logging.logToOutput(convertToh3Option(sb.toString()));
                                 if(!sent)
                                 sendToTelegram(sb.toString());
                             } else {
@@ -238,4 +238,11 @@ public class MyProxyWebSocketMessageHandler implements ProxyMessageHandler {
         return String.format("<img src=\"%s\" alt=\"%s\" width=\"%d\" height=\"%d\" />",
                 imageUrl, altText, width, height);
     }
+    public String convertToParaAnswerExp(String text) {
+        return "<p>" + text + "</p>";
+    }
+    public String convertToh3Option(String text) {
+        return "<h3>" + text + "</h3>";
+    }
+
 }
